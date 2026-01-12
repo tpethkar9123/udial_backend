@@ -11,6 +11,10 @@ pipeline {
         EC2_SSH_CREDS    = 'ssh-deploy-key'
     }
 
+    tools {
+        nodejs "node20"
+    }
+
     stages {
         stage('Checkout') {
             steps {
