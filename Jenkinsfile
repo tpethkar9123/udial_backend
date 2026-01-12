@@ -38,7 +38,13 @@ pipeline {
         }
 
         stage('Build & Push to Docker Hub') {
-            when { branch 'main' }
+            when { 
+                anyOf {
+                    branch 'main'
+                    expression { return env.BRANCH_NAME == 'main' }
+                    expression { return env.GIT_BRANCH?.contains('main') }
+                }
+            }
             steps {
                 script {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
@@ -52,7 +58,13 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
-            when { branch 'main' }
+            when { 
+                anyOf {
+                    branch 'main'
+                    expression { return env.BRANCH_NAME == 'main' }
+                    expression { return env.GIT_BRANCH?.contains('main') }
+                }
+            }
             steps {
                 // Copy local ansible files from volume mount into workspace (ignored by git)
                 sh 'cp -r /var/lib/jenkins/ansible ./ansible'
