@@ -6,7 +6,6 @@ import { PrismaService } from './../src/prisma/prisma.service';
 describe('Prisma Integration (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let server: any;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -18,7 +17,7 @@ describe('Prisma Integration (e2e)', () => {
     await app.init();
 
     prisma = app.get<PrismaService>(PrismaService);
-    server = process.env.BASE_URL || app.getHttpServer();
+    process.env.BASE_URL || app.getHttpServer();
   });
 
   afterAll(async () => {
