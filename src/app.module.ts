@@ -10,9 +10,13 @@ import { S3Module } from './s3/s3.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WorkerModule } from './worker/worker.module';
 import { LogsModule } from './logs/logs.module';
+import { PrometheusModule } from '@nanogiants/nestjs-prometheus';
 
 @Module({
   imports: [
+    PrometheusModule.register({
+      path: '/metrics',
+    }),
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).hostname : 'localhost',
