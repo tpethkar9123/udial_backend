@@ -26,6 +26,7 @@ pipeline {
             steps {
                 sh 'corepack enable'
                 sh 'pnpm install --frozen-lockfile'
+                sh 'npx prisma generate'
                 sh 'pnpm run lint'
             }
         }
