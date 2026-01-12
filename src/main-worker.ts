@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
+  await NestFactory.createApplicationContext(AppModule);
   const logger = new Logger('WorkerBootstrap');
   
   logger.log('Worker is running and listening for jobs...');
