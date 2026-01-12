@@ -1,0 +1,34 @@
+import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
+import { HealthModule } from './health/health.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { LeadsModule } from './leads/leads.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { RedisModule } from './redis/redis.module';
+import { S3Module } from './s3/s3.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { WorkerModule } from './worker/worker.module';
+import { LogsModule } from './logs/logs.module';
+
+@Module({
+  imports: [
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_URL ? new URL(process.env.REDIS_URL).hostname : 'localhost',
+        port: process.env.REDIS_URL ? parseInt(new URL(process.env.REDIS_URL).port) : 6379,
+      },
+    }),
+    HealthModule,
+    AuthModule,
+    UsersModule,
+    LeadsModule,
+    UploadsModule,
+    RedisModule,
+    S3Module,
+    PrismaModule,
+    WorkerModule,
+    LogsModule,
+  ],
+})
+export class AppModule {}
