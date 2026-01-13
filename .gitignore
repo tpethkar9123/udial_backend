@@ -11,3 +11,4 @@ test_output.txt
 test_results.txt
 test-fail*.log
 coverage_output.txt
+coverage/
