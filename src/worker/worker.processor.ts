@@ -1,10 +1,15 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
+import { AuditLogService } from '../logs/audit-log.service';
 
 @Processor('logs-queue')
 export class UserProcessor extends WorkerHost {
   private readonly logger = new Logger(UserProcessor.name);
+
+  constructor(private readonly auditLogService: AuditLogService) {
+    super();
+  }
 
   async process(job: Job<any, any, string>): Promise<any> {
     this.logger.log(`Worker processing job ${job.id} of type ${job.name}`);
@@ -12,9 +17,22 @@ export class UserProcessor extends WorkerHost {
     switch (job.name) {
       case 'log-action': {
         const { action, userId, details } = job.data;
-        // Here you would do "really fine logging" - e.g. saving to a DB or external service
+        
+        // Save log to the database
+        await this.auditLogService.createLog({
+          action,
+          method: details?.method,
+          url: details?.url,
+          statusCode: details?.statusCode,
+          duration: details?.duration,
+          ip: details?.ip,
+          userAgent: details?.userAgent,
+          details,
+          userId: userId !== 'SYSTEM' ? userId : undefined,
+        });
+        
         this.logger.log(
-          `FINE LOG: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
+          `Audit log saved: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
         );
         break;
       }

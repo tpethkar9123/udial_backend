@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1768296866570" clover="3.2.0">
-  <project timestamp="1768296866570" name="All files">
-    <metrics statements="132" coveredstatements="129" conditionals="12" coveredconditionals="12" methods="36" coveredmethods="34" elements="180" coveredelements="175" complexity="0" loc="132" ncloc="132" packages="9" files="13" classes="13"/>
+<coverage generated="1768307072179" clover="3.2.0">
+  <project timestamp="1768307072180" name="All files">
+    <metrics statements="150" coveredstatements="147" conditionals="23" coveredconditionals="22" methods="41" coveredmethods="39" elements="214" coveredelements="208" complexity="0" loc="150" ncloc="150" packages="9" files="14" classes="14"/>
     <package name="auth">
       <metrics statements="22" coveredstatements="22" conditionals="5" coveredconditionals="5" methods="2" coveredmethods="2"/>
       <file name="auth.guard.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\auth\auth.guard.ts">
@@ -82,7 +82,24 @@
       </file>
     </package>
     <package name="logs">
-      <metrics statements="26" coveredstatements="25" conditionals="2" coveredconditionals="2" methods="8" coveredmethods="7"/>
+      <metrics statements="40" coveredstatements="39" conditionals="11" coveredconditionals="10" methods="13" coveredmethods="12"/>
+      <file name="audit-log.service.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\logs\audit-log.service.ts">
+        <metrics statements="14" coveredstatements="14" conditionals="9" coveredconditionals="8" methods="5" coveredmethods="5"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+        <line num="18" count="18" type="stmt"/>
+        <line num="20" count="18" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="39" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="46" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="48" count="3" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+      </file>
       <file name="logging.interceptor.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\logs\logging.interceptor.ts">
         <metrics statements="20" coveredstatements="19" conditionals="2" coveredconditionals="2" methods="6" coveredmethods="5"/>
         <line num="1" count="1" type="stmt"/>
@@ -108,11 +125,11 @@
       </file>
       <file name="logs.service.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\logs\logs.service.ts">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="3" count="3" type="stmt"/>
-        <line num="6" count="3" type="stmt"/>
-        <line num="7" count="7" type="stmt"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="6" count="4" type="stmt"/>
+        <line num="7" count="12" type="stmt"/>
         <line num="10" count="3" type="stmt"/>
       </file>
     </package>
@@ -120,11 +137,11 @@
       <metrics statements="11" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
       <file name="prisma.service.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\prisma\prisma.service.ts">
         <metrics statements="11" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
-        <line num="1" count="5" type="stmt"/>
-        <line num="2" count="5" type="stmt"/>
-        <line num="3" count="5" type="stmt"/>
-        <line num="4" count="5" type="stmt"/>
-        <line num="7" count="5" type="stmt"/>
+        <line num="1" count="9" type="stmt"/>
+        <line num="2" count="9" type="stmt"/>
+        <line num="3" count="9" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="7" count="9" type="stmt"/>
         <line num="8" count="2" type="stmt"/>
         <line num="11" count="2" type="stmt"/>
         <line num="17" count="2" type="stmt"/>
@@ -184,20 +201,24 @@
       </file>
     </package>
     <package name="worker">
-      <metrics statements="11" coveredstatements="11" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+      <metrics statements="15" coveredstatements="15" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
       <file name="worker.processor.ts" path="C:\Users\Pethkar\Desktop\uDIAL backend infrastructure\apps\api\src\worker\worker.processor.ts">
-        <metrics statements="11" coveredstatements="11" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <metrics statements="15" coveredstatements="15" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
         <line num="1" count="2" type="stmt"/>
         <line num="3" count="2" type="stmt"/>
-        <line num="6" count="2" type="stmt"/>
-        <line num="7" count="6" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
-        <line num="12" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="14" count="2" type="stmt"/>
-        <line num="16" count="2" type="stmt"/>
-        <line num="19" count="2" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
-        <line num="25" count="3" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="8" count="9" type="stmt"/>
+        <line num="10" count="9" type="stmt"/>
+        <line num="11" count="9" type="stmt"/>
+        <line num="15" count="5" type="stmt"/>
+        <line num="17" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="4" type="stmt"/>
+        <line num="22" count="4" type="stmt"/>
+        <line num="34" count="4" type="stmt"/>
+        <line num="37" count="4" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="43" count="5" type="stmt"/>
       </file>
     </package>
   </project>
