@@ -81,9 +81,11 @@ pnpm test
 # E2E Tests
 pnpm test:e2e
 
-# Code Coverage
+# Code Coverage (Enforced 75% threshold)
 pnpm test:cov
 ```
+
+> **Note**: The CI/CD pipeline will fail if global coverage (Statements, Branches, Functions, Lines) falls below **75%**.
 
 ## 🐳 Containerization
 
