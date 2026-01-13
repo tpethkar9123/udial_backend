@@ -66,13 +66,10 @@ pipeline {
                 }
             }
             steps {
-                // Copy local ansible files from volume mount into workspace (ignored by git)
-                sh 'cp -r /var/lib/jenkins/ansible ./ansible'
-                
-                // Trigger the Ansible playbook for deployment
+                // Use Ansible files from the repository
                 ansiblePlaybook(
-                    playbook: 'ansible/deploy.yml',
-                    inventory: 'ansible/inventory.ini',
+                    playbook: 'infra/ansible/deploy.yml',
+                    inventory: 'infra/ansible/inventory.ini',
                     credentialsId: "${EC2_SSH_CREDS}"
                 )
             }
