@@ -72,14 +72,16 @@ pipeline {
             }
             steps {
                 // Copy Ansible files from Jenkins volume mount (not in git)
-                // Ensure you have mounted your local ansible folder to /var/lib/jenkins/ansible in Jenkins container
                 sh 'cp -r /var/lib/jenkins/ansible ./ansible'
                 
-                ansiblePlaybook(
-                    playbook: 'ansible/deploy.yml',
-                    inventory: 'ansible/inventory.ini',
-                    credentialsId: "${EC2_SSH_CREDS}"
-                )
+                // Disable host key checking so the build doesn't hang or fail on verification
+                withEnv(["ANSIBLE_HOST_KEY_CHECKING=False"]) {
+                    ansiblePlaybook(
+                        playbook: 'ansible/deploy.yml',
+                        inventory: 'ansible/inventory.ini',
+                        credentialsId: "${EC2_SSH_CREDS}"
+                    )
+                }
             }
         }
     }
