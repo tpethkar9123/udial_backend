@@ -43,14 +43,14 @@ describe('S3Service', () => {
   describe('getPresignedUrl', () => {
     it('should return a presigned URL for the given filename', async () => {
       const filename = 'test-file.pdf';
-      
+
       const result = await service.getPresignedUrl(filename);
 
       expect(result).toBe('https://signed-url.example.com');
       expect(mockGetSignedUrl).toHaveBeenCalledWith(
         expect.any(S3Client),
         expect.any(PutObjectCommand),
-        { expiresIn: 3600 }
+        { expiresIn: 3600 },
       );
     });
 
@@ -67,11 +67,9 @@ describe('S3Service', () => {
     it('should use correct expiry time of 1 hour', async () => {
       await service.getPresignedUrl('test.txt');
 
-      expect(mockGetSignedUrl).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        { expiresIn: 3600 }
-      );
+      expect(mockGetSignedUrl).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+        expiresIn: 3600,
+      });
     });
   });
 });

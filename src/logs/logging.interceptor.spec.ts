@@ -6,7 +6,6 @@ import { of, throwError } from 'rxjs';
 
 describe('LoggingInterceptor', () => {
   let interceptor: LoggingInterceptor;
-  let logsService: LogsService;
 
   const mockLogsService = {
     logAction: jest.fn().mockResolvedValue(undefined),
@@ -44,7 +43,6 @@ describe('LoggingInterceptor', () => {
     }).compile();
 
     interceptor = module.get<LoggingInterceptor>(LoggingInterceptor);
-    logsService = module.get<LogsService>(LogsService);
 
     jest.clearAllMocks();
   });

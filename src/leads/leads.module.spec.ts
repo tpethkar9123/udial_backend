@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LeadsModule } from './leads.module';
 import { LeadsService } from './leads.service';
 import { LeadsController } from './leads.controller';
-import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
 
 describe('LeadsModule', () => {

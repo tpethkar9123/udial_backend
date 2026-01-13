@@ -45,7 +45,7 @@ describe('LeadsService', () => {
 
     service = module.get<LeadsService>(LeadsService);
     prisma = module.get<PrismaService>(PrismaService);
-    
+
     // Clear all mocks before each test
     jest.clearAllMocks();
   });
@@ -149,9 +149,9 @@ describe('LeadsService', () => {
     it('should throw NotFoundException when updating non-existent lead', async () => {
       mockPrismaService.lead.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.update('non-existent-id', { leadName: 'Test' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent-id', { leadName: 'Test' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

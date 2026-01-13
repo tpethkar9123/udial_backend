@@ -1,38 +1,42 @@
 # uDIAL Backend API
 
-The core backend API and worker service for the uDIAL platform, built with NestJS.
+The core backend API and worker service for the uDIAL platform, built with NestJS and Prisma v7.
 
 ## 🚀 Features
 
-- **Auth**: Secure authentication using Clerk.
-- **Database**: PostgreSQL with Prisma ORM.
-- **Queues**: Background job processing using BullMQ and Redis.
-- **Storage**: File uploads managed via AWS S3 with pre-signed URLs.
-- **Logging**: Sophisticated logging setup with Winston.
-- **Health Checks**: Built-in health monitoring endpoints.
+- **🔐 Authentication**: Secure identity management using [Clerk](https://clerk.dev/).
+- **💼 Leads Management**: Optimized CRUD for managing business leads.
+- **🗄️ Database**: Prisma v7 ORM with PostgreSQL.
+- **🕵️ Monitoring**: Built-in Prometheus metrics exporter at `/api/metrics`.
+- **🐝 Queues**: Scalable background job processing via BullMQ and Redis.
+- **☁️ Storage**: AWS S3 integration for secure file management.
+- **📜 Logging**: Structured logging system powered by Winston and Custom Interceptors.
+- **🏥 Health**: Robust health check endpoints for system reliability.
 
 ## 🛠️ Tech Stack
 
 - **Framework**: [NestJS](https://nestjs.com/)
-- **ORM**: [Prisma](https://www.prisma.io/)
+- **ORM**: [Prisma v7](https://www.prisma.io/)
 - **Queue**: [BullMQ](https://docs.bullmq.io/)
-- **Runtime**: Node.js with TypeScript
+- **Metrics**: [Prometheus](@willsoto/nestjs-prometheus)
+- **Runtime**: Node.js 20+
 - **Package Manager**: pnpm
 
 ## 📋 Prerequisites
 
-- Node.js (v20+)
-- pnpm
-- Docker (for PostgreSQL and Redis)
+- **Node.js**: v20 or higher
+- **pnpm**: `npm install -g pnpm`
+- **Docker**: For running PostgreSQL, Redis, and Prometheus/Grafana.
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file in the root of this directory based on the `.env.example` file:
+Copy `.env.example` to `.env` and configure the following:
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/udial"
 REDIS_URL="redis://localhost:6379"
 CLERK_SECRET_KEY="sk_test_..."
+CLERK_PEM_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----..."
 AWS_ACCESS_KEY_ID="..."
 AWS_SECRET_ACCESS_KEY="..."
 AWS_S3_BUCKET="..."
@@ -45,24 +49,30 @@ AWS_S3_BUCKET="..."
 pnpm install
 ```
 
-### 2. Database Setup
+### 2. Database Migration
 ```bash
 npx prisma migrate dev
 ```
 
-### 3. Run the Application
+### 3. Start the Server
 ```bash
-# Development
-pnpm start
-
-# Watch Mode
+# Development (Hot-reload)
 pnpm start:dev
 
-# Run Worker Service
+# Production Build
+pnpm build
+pnpm start:prod
+```
+
+### 4. Background Worker
+To run the background processor independently:
+```bash
 pnpm start:worker
 ```
 
 ## 🧪 Testing
+
+The project uses Jest for testing.
 
 ```bash
 # Unit Tests
@@ -71,19 +81,24 @@ pnpm test
 # E2E Tests
 pnpm test:e2e
 
-# Test Coverage
+# Code Coverage
 pnpm test:cov
 ```
 
-## 🐳 Docker
+## 🐳 Containerization
 
-The project includes a `Dockerfile` for containerized deployment.
+Build and run the API using Docker:
 
 ```bash
 docker build -t udial-api .
-docker run -p 3000:3000 udial-api
+docker run -p 3000:3000 --env-file .env udial-api
 ```
+
+## 📊 Monitoring Endpoints
+
+- **Health Check**: `GET /api/health`
+- **Metrics**: `GET /api/metrics`
 
 ## 📄 License
 
-This project is private and confidential.
+Private and confidential.

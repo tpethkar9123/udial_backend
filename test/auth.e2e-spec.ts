@@ -48,9 +48,6 @@ describe('Auth Integration (e2e)', () => {
     } as any;
     jest.spyOn(clerk, 'verifyJwt').mockResolvedValue(mockUser);
 
-    return request(server)
-      .get('/api/leads')
-      .set('Authorization', 'Bearer valid-token')
-      .expect(200);
+    return request(server).get('/api/leads').set('Authorization', 'Bearer valid-token').expect(200);
   });
 });

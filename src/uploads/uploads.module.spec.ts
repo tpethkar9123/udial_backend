@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UploadsModule } from './uploads.module';
 import { UploadsService } from './uploads.service';
 import { UploadsController } from './uploads.controller';
-import { S3Service } from '../s3/s3.service';
 
 // Mock AWS SDK
 jest.mock('@aws-sdk/client-s3');

@@ -8,12 +8,14 @@ export class UserProcessor extends WorkerHost {
 
   async process(job: Job<any, any, string>): Promise<any> {
     this.logger.log(`Worker processing job ${job.id} of type ${job.name}`);
-    
+
     switch (job.name) {
       case 'log-action': {
         const { action, userId, details } = job.data;
         // Here you would do "really fine logging" - e.g. saving to a DB or external service
-        this.logger.log(`FINE LOG: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`);
+        this.logger.log(
+          `FINE LOG: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
+        );
         break;
       }
       default:
