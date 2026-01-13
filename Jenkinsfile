@@ -6,9 +6,14 @@ pipeline {
         DOCKER_IMAGE = 'tpethkar/udial-backend'
         DOCKER_TAG = 'latest'
         
-        // Credentials IDs (ensure these are set up in Jenkins -> Credentials)
+        // Credentials IDs
         DOCKER_HUB_CREDS = 'docker-hub-credentials'
         EC2_SSH_CREDS    = 'ssh-deploy-key'
+    }
+
+    triggers {
+        // Poll GitHub every 2 minutes for changes
+        pollSCM('H/2 * * * *')
     }
 
     tools {
