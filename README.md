@@ -70,22 +70,23 @@ To run the background processor independently:
 pnpm start:worker
 ```
 
-## 🧪 Testing
-
-The project uses Jest for testing.
+## 🧪 Testing & Quality
+Current Coverage: 🟢 **98.1%** (Enforced Minimum: **75.0%**)
 
 ```bash
-# Unit Tests
+# Run all tests
 pnpm test
 
-# E2E Tests
-pnpm test:e2e
-
-# Code Coverage (Enforced 75% threshold)
+# Run coverage locally
 pnpm test:cov
 ```
 
-> **Note**: The CI/CD pipeline will fail if global coverage (Statements, Branches, Functions, Lines) falls below **75%**.
+## 🚀 CI/CD Pipeline
+The API uses a scripted Jenkins pipeline (`Jenkinsfile`) for continuous delivery:
+1. **Validation**: Parallel linting and coverage testing.
+2. **Security**: Prisma client generation with CI-friendly placeholders.
+3. **Packaging**: Multi-stage Docker build for minimal image size.
+4. **Delivery**: Automatic Ansible deployment to EC2 (triggered on `main`).
 
 ## 🐳 Containerization
 
