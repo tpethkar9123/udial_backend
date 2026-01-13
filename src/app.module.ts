@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 import { LeadsModule } from './leads/leads.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { RedisModule } from './redis/redis.module';
@@ -10,7 +9,7 @@ import { S3Module } from './s3/s3.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WorkerModule } from './worker/worker.module';
 import { LogsModule } from './logs/logs.module';
-import { PrometheusModule } from '@nanogiants/nestjs-prometheus';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
@@ -25,7 +24,6 @@ import { PrometheusModule } from '@nanogiants/nestjs-prometheus';
     }),
     HealthModule,
     AuthModule,
-    UsersModule,
     LeadsModule,
     UploadsModule,
     RedisModule,

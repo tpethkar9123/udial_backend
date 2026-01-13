@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { LeadsService } from './leads.service';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { LeadsService, CreateLeadDto, UpdateLeadDto } from './leads.service';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('leads')
@@ -13,12 +13,22 @@ export class LeadsController {
   }
 
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: CreateLeadDto) {
     return this.leadsService.create(data);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: any) {
+  findOne(@Param('id') id: string) {
     return this.leadsService.findOne(id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() data: UpdateLeadDto) {
+    return this.leadsService.update(id, data);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    return this.leadsService.delete(id);
   }
 }

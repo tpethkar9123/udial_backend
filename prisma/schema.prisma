@@ -1,21 +1,52 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model user {
-  id    String @id @default(uuid())
-  name  String
-  email String @unique
 }
 
 model lead {
-  id    String @id @default(uuid())
-  name  String
-  email String
+  id          String     @id @default(uuid())
+  leadName    String
+  institution String?
+  phoneNumber String?
+  city        String?
+  priority    Priority   @default(MEDIUM)
+  stage       LeadStage  @default(CALL_DONE)
+  owner       String?
+  source      LeadSource @default(WEBSITE)
+  status      LeadStatus @default(NEW)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum LeadStage {
+  CALL_DONE
+  FOLLOWUP_DONE
+  DEMO_BOOKED
+  NEGOTIATION
+  FUTURE_CONNECT
+}
+
+enum LeadStatus {
+  NEW
+  CONNECTED
+  DEMO_DONE
+  CLOSED_WON
+  LOST
+  FOLLOW_UP
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  EMAIL_CAMPAIGN
+  SOCIAL_MEDIA
 }

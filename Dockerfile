@@ -7,10 +7,10 @@ COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV CI=true
 # Install all dependencies (including dev) for build
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 # Now copy the rest of the source files
 COPY . .
-RUN npx prisma generate
+RUN DATABASE_URL="postgresql://placeholder:5432" npx prisma generate
 RUN pnpm run build
 
 # Stage 2: Production
@@ -23,11 +23,12 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/prisma ./prisma
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Copy only production dependencies
+RUN pnpm install
 
-# Copy generated Prisma client from builder stage
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Generate Prisma client in production stage
+RUN DATABASE_URL="postgresql://placeholder:5432" npx prisma generate
+
 ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
