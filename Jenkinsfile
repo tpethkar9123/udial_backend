@@ -31,9 +31,9 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Test & 75% Code Coverage') {
             steps {
-                sh 'pnpm run test'
+                sh 'pnpm run test:cov'
             }
         }
 
