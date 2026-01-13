@@ -5,7 +5,6 @@ import { Job } from 'bullmq';
 
 describe('UserProcessor', () => {
   let processor: UserProcessor;
-  let auditLogService: AuditLogService;
 
   const mockAuditLogService = {
     createLog: jest.fn(),
@@ -23,7 +22,6 @@ describe('UserProcessor', () => {
     }).compile();
 
     processor = module.get<UserProcessor>(UserProcessor);
-    auditLogService = module.get<AuditLogService>(AuditLogService);
 
     jest.clearAllMocks();
   });

@@ -44,7 +44,7 @@ export class AuditLogService {
 
   async findAll(options?: { limit?: number; offset?: number; action?: string }) {
     const { limit = 100, offset = 0, action } = options || {};
-    
+
     return this.prisma.auditLog.findMany({
       where: action ? { action } : undefined,
       orderBy: { createdAt: 'desc' },

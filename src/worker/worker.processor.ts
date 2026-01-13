@@ -17,7 +17,7 @@ export class UserProcessor extends WorkerHost {
     switch (job.name) {
       case 'log-action': {
         const { action, userId, details } = job.data;
-        
+
         // Save log to the database
         await this.auditLogService.createLog({
           action,
@@ -30,7 +30,7 @@ export class UserProcessor extends WorkerHost {
           details,
           userId: userId !== 'SYSTEM' ? userId : undefined,
         });
-        
+
         this.logger.log(
           `Audit log saved: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
         );
