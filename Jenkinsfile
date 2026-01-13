@@ -66,10 +66,13 @@ pipeline {
                 }
             }
             steps {
-                // Use Ansible files from the repository
+                // Copy Ansible files from Jenkins volume mount (not in git)
+                // Ensure you have mounted your local ansible folder to /var/lib/jenkins/ansible in Jenkins container
+                sh 'cp -r /var/lib/jenkins/ansible ./ansible'
+                
                 ansiblePlaybook(
-                    playbook: 'infra/ansible/deploy.yml',
-                    inventory: 'infra/ansible/inventory.ini',
+                    playbook: 'ansible/deploy.yml',
+                    inventory: 'ansible/inventory.ini',
                     credentialsId: "${EC2_SSH_CREDS}"
                 )
             }
