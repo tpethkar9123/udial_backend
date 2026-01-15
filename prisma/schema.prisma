@@ -50,3 +50,34 @@ enum LeadSource {
   EMAIL_CAMPAIGN
   SOCIAL_MEDIA
 }
+
+// User model for linking audit logs to authenticated users
+model User {
+  id        String     @id @default(uuid())
+  clerkId   String     @unique
+  email     String?
+  name      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  auditLogs AuditLog[]
+}
+
+// Audit Log table for storing all API request logs permanently
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String   // e.g., "HTTP_REQUEST", "HTTP_ERROR", "LEAD_CREATED"
+  method     String?  // HTTP method (GET, POST, etc.)
+  url        String?  // Request URL
+  statusCode Int?     // HTTP status code
+  duration   String?  // Request duration in ms
+  ip         String?  // Client IP address
+  userAgent  String?  // Client user agent
+  details    Json?    // Additional JSON details
+  userId     String?  // Optional: linked to User model
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([userId])
+  @@index([createdAt])
+}

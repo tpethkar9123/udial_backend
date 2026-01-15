@@ -1,91 +1,247 @@
-# Testing Documentation - Clerk Auth Feature
+# Testing Documentation - uDIAL Backend API
 
-This document provides an overview of the testing suite implemented for the Clerk Authentication feature in the uDIAL Backend API.
+This document provides a comprehensive guide to the testing suite for the uDIAL Backend API.
 
 ## 1. Test Architecture
 
 The testing suite is divided into two main categories:
-1. **Unit Tests**: Focus on individual components and utility functions in isolation.
-2. **End-to-End (e2e) Tests**: Focus on the integration of multiple components and the overall request lifecycle.
+1. **Unit Tests**: Focus on individual components and utility functions in isolation (mocked dependencies)
+2. **End-to-End (e2e) Integration Tests**: Use **real database and Redis connections** to test full workflows
 
-## 2. Unit Tests
+## 2. Prerequisites
 
-### AuthGuard (`src/auth/auth.guard.spec.ts`)
-The `AuthGuard` is responsible for protecting routes and verifying the `Authorization` header.
-- **Tests Implemented**:
-  - **Sanity Check**: Ensures the guard is correctly defined and injectable.
-  - **Missing Header**: Verifies that requests without an `Authorization` header are rejected with a `401 Unauthorized` status.
-  - **Invalid Token**: Verifies that malformed or invalid JWTs are rejected.
-  - **Success Flow**: Verifies that a valid token results in a `true` return value and properly attaches the user object to the request.
+Before running integration tests, ensure the following:
 
-### Modules (`src/**/*.module.ts`)
-Module tests ensure that dependencies are correctly registered and exported.
-- **Modules Covered**: `AuthModule`, `HealthModule`, `PrismaModule`, `RedisModule`.
-
-### Health Check (`src/health/health.controller.spec.ts`)
-- **Tests Implemented**:
-  - Verifies that the `/health` endpoint returns `{ status: 'ok' }`.
-
-### Prisma Service (`src/prisma/prisma.service.spec.ts`)
-- **Tests Implemented**:
-  - Verifies database connection initialization on module startup.
-
-### Redis Service (`src/redis/redis.service.spec.ts`)
-- **Tests Implemented**:
-  - **Environment Check**: Verifies that an error is thrown if `REDIS_URL` is missing.
-  - **Data Operations**: Verifies `get` and `set` (with/without TTL) work correctly using a mocked `ioredis` instance.
-
-### Clerk Utilities (`src/auth/clerk.spec.ts`)
-The `verifyJwt` utility is the core logic for interacting with the `@clerk/backend` SDK.
-- **Tests Implemented**:
-  - **Stateless Verification**: Mocks the SDK to simulate RSA public key verification of the JWT.
-  - **Stateful Enrichment**: Verifies that the code correctly fetches detailed user profile information using the `subject` claim (User ID).
-  - **Failure Modes**: Verifies correct handling of missing JWT claims or failed network calls to the Clerk API.
-
-## 3. End-to-End (e2e) Tests
-
-### Auth Integration (`test/auth.e2e-spec.ts`)
-These tests bootstrap the entire NestJS application and use `supertest` to make actual HTTP requests.
-- **Scenarios Covered**:
-  - **Unauthenticated Access**: Hits `/api/users` with no header and expects failure.
-  - **Bad Token Access**: Hits `/api/users` with a fake token and expects failure.
-  - **Authenticated Access**: Hits `/api/users` with a mocked valid session and expects a `200 OK` response.
-
-  - **Authenticated Access**: Hits `/api/users` with a mocked valid session and expects a `200 OK` response.
-
-### Prisma Integration (`test/prisma.e2e-spec.ts`)
-These tests perform real CRUD operations against the PostgreSQL database.
-- **Scenarios Covered**:
-  - **User Creation**: Creates a user and verifies all fields are persisted.
-  - **User Retrieval**: Verifies that a user can be found by unique fields.
-  - **Lead Creation**: Verifies lead record persistence.
-  - **Lead Retrieval**: Verifies lead lookup.
-- **Cleanup**: The tests automatically delete all test records created during the run (targeted by email domain `test-prisma-e2e.com`).
-
-## 4. How to Run Tests
-
-Ensure you have installed the dependencies first:
+### Environment Variables
+Create a `.env` file in the `apps/api` directory with:
 ```bash
-npm install
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+REDIS_URL=redis://host:port
+CLERK_SECRET_KEY=your_clerk_secret_key
 ```
+
+### Running Services
+- **PostgreSQL Database**: Must be running and accessible
+- **Redis Server**: Must be running and accessible
+- **Prisma Migrations**: Must be applied (`npx prisma migrate deploy`)
+
+### TLS Certificate Note
+If your database uses self-signed certificates, set this environment variable:
+```powershell
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'
+```
+
+## 3. End-to-End Integration Tests
+
+### 3.1 Audit Log Integration Tests (`test/audit-log.e2e-spec.ts`)
+
+Tests the audit logging system using **real PostgreSQL and Redis connections**.
+
+**Test Suites:**
+| Suite | Tests |
+|-------|-------|
+| Database Connectivity | PostgreSQL connection verification |
+| Redis Connectivity | Redis set/get operations |
+| Create Operations | Full field logging, minimal logging, JSON details |
+| Read Operations | Pagination, filtering, ordering |
+| Count Operations | Count by action, non-existent action |
+| Prisma Direct Operations | Complex queries, grouping |
+
+**Run Command:**
+```powershell
+# PowerShell (Windows)
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/audit-log.e2e-spec.ts
+
+# Bash (Linux/Mac)
+NODE_TLS_REJECT_UNAUTHORIZED=0 npx jest --config ./test/jest-e2e.json test/audit-log.e2e-spec.ts
+```
+
+---
+
+### 3.2 Prisma/Lead Integration Tests (`test/prisma.e2e-spec.ts`)
+
+Tests Lead CRUD operations using **real PostgreSQL database**.
+
+**Test Suites:**
+| Suite | Tests |
+|-------|-------|
+| Database Connectivity | Connection verification |
+| Comprehensive CRUD | Create, Read, Update, Delete operations |
+| Enum Values | All Priority, LeadStage, LeadStatus, LeadSource values |
+| Default Values | Default enum value verification |
+| Query Operations | Filtering, counting, ordering |
+
+**Run Command:**
+```powershell
+# PowerShell (Windows)
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/prisma.e2e-spec.ts
+
+# Bash (Linux/Mac)
+NODE_TLS_REJECT_UNAUTHORIZED=0 npx jest --config ./test/jest-e2e.json test/prisma.e2e-spec.ts
+```
+
+---
+
+### 3.3 Leads Integration Tests (`test/leads.e2e-spec.ts`)
+
+Tests the LeadsService layer using **real PostgreSQL database**.
+
+**Test Suites:**
+| Suite | Tests |
+|-------|-------|
+| Direct Database Operations | Create, FindOne, Update, FindAll, Delete, NotFoundException |
+| Enum Validation | All enum values for Priority, LeadStage, LeadStatus, LeadSource |
+| Default Values | Default enum values on minimal lead creation |
+| Bulk Operations | Create and list multiple leads |
+| Update Partial Fields | Single field update, multi-field update |
+| Prisma Direct Operations | Complex queries, count by city |
+
+**Run Command:**
+```powershell
+# PowerShell (Windows)
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/leads.e2e-spec.ts
+
+# Bash (Linux/Mac)
+NODE_TLS_REJECT_UNAUTHORIZED=0 npx jest --config ./test/jest-e2e.json test/leads.e2e-spec.ts
+```
+
+---
+
+### 3.4 Auth Integration Tests (`test/auth.e2e-spec.ts`)
+
+Tests authentication flows using mocked Clerk authentication.
+
+**Run Command:**
+```powershell
+npx jest --config ./test/jest-e2e.json test/auth.e2e-spec.ts
+```
+
+---
+
+## 4. Running All Integration Tests
+
+### Run All E2E Tests
+```powershell
+# PowerShell (Windows)
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json
+
+# Bash (Linux/Mac)
+NODE_TLS_REJECT_UNAUTHORIZED=0 npx jest --config ./test/jest-e2e.json
+```
+
+### Run Specific Test Suites Together
+```powershell
+# Run Leads and Prisma tests together
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/leads.e2e-spec.ts test/prisma.e2e-spec.ts
+
+# Run all database-related tests
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/leads.e2e-spec.ts test/prisma.e2e-spec.ts test/audit-log.e2e-spec.ts
+```
+
+---
+
+## 5. Unit Tests
 
 ### Run All Unit Tests
 ```bash
 npm run test
+# or
+pnpm test
 ```
 
-### Run e2e Tests
-```bash
-npm run test:e2e
-```
-
-### Generate Coverage Report
+### Run with Coverage
 ```bash
 npm run test:cov
 ```
-The report will be available in the `coverage/` directory.
 
-## 5. Mocking Strategy
-To avoid dependency on actual Clerk API keys during testing:
-- We use **local mocking** for the `@clerk/backend` package using `jest.mock`.
-- We use **spyOn** for the `clerk.ts` utility functions in high-level guard tests to control flow.
+The coverage report will be generated in the `coverage/` directory.
+
+### Unit Test Files
+| File | Component |
+|------|-----------|
+| `src/auth/auth.guard.spec.ts` | AuthGuard |
+| `src/auth/clerk.spec.ts` | Clerk JWT utilities |
+| `src/health/health.controller.spec.ts` | Health endpoint |
+| `src/prisma/prisma.service.spec.ts` | Prisma service |
+| `src/redis/redis.service.spec.ts` | Redis service |
+| `src/leads/leads.service.spec.ts` | Leads service |
+| `src/leads/leads.controller.spec.ts` | Leads controller |
+| `src/logs/audit-log.service.spec.ts` | Audit log service |
+| `src/worker/worker.processor.spec.ts` | BullMQ worker |
+
+---
+
+## 6. Test Data Cleanup
+
+All integration tests use a unique **test prefix** pattern to identify test data:
+- Leads: `test-leads-e2e-*`, `test-prisma-e2e-*`
+- Audit Logs: `test-audit-e2e-*`
+
+Test data is **automatically cleaned up** in the `afterAll` hooks. If tests fail mid-execution, you can manually clean up:
+
+```sql
+-- Clean up test leads
+DELETE FROM lead WHERE "leadName" LIKE 'test-%';
+
+-- Clean up test audit logs
+DELETE FROM "AuditLog" WHERE action LIKE 'test-%';
+```
+
+---
+
+## 7. Troubleshooting
+
+### Open Handles Warning
+If you see "Jest did not exit one second after the test run has completed", use:
+```bash
+npx jest --config ./test/jest-e2e.json --detectOpenHandles
+```
+
+### TLS Certificate Errors
+Set the environment variable to bypass TLS verification for self-signed certificates:
+```powershell
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'
+```
+
+### Database Connection Issues
+1. Verify `DATABASE_URL` is correctly set in `.env`
+2. Ensure the database server is running
+3. Check network connectivity and firewall rules
+
+### Redis Connection Issues
+1. Verify `REDIS_URL` is correctly set in `.env`
+2. Ensure Redis server is running
+3. Check if password authentication is required
+
+---
+
+## 8. Quick Reference Commands
+
+| Action | Command |
+|--------|---------|
+| Run all unit tests | `npm run test` |
+| Run unit tests with watch | `npm run test:watch` |
+| Run coverage report | `npm run test:cov` |
+| Run all e2e tests | `npm run test:e2e` |
+| Run specific e2e test | `npx jest --config ./test/jest-e2e.json test/<file>.e2e-spec.ts` |
+| Debug open handles | `npx jest --detectOpenHandles` |
+
+---
+
+## 9. CI/CD Integration
+
+For CI environments, use these npm scripts:
+```json
+{
+  "test": "jest",
+  "test:e2e": "jest --config ./test/jest-e2e.json"
+}
+```
+
+Set environment variables in your CI configuration:
+```yaml
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+  NODE_TLS_REJECT_UNAUTHORIZED: '0'
+```

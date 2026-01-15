@@ -1,0 +1,11 @@
+# Run Audit Log tests
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/audit-log.e2e-spec.ts
+
+# Run Prisma/Lead tests
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/prisma.e2e-spec.ts
+
+# Run Leads Service tests
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json test/leads.e2e-spec.ts
+
+# Run ALL integration tests
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'; npx jest --config ./test/jest-e2e.json
