@@ -19,7 +19,7 @@ export class AuditLogService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async createLog(data: AuditLogData): Promise<void> {
+  async createLog(data: AuditLogData): Promise<boolean> {
     try {
       await this.prisma.auditLog.create({
         data: {
@@ -35,9 +35,11 @@ export class AuditLogService {
         },
       });
       this.logger.debug(`Audit log created: ${data.action}`);
+      return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to create audit log: ${errorMessage}`);
+      return false;
       // Don't throw - logging should not break the application
     }
   }

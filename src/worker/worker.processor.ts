@@ -19,7 +19,7 @@ export class UserProcessor extends WorkerHost {
         const { action, userId, details } = job.data;
 
         // Save log to the database
-        await this.auditLogService.createLog({
+        const success = await this.auditLogService.createLog({
           action,
           method: details?.method,
           url: details?.url,
@@ -31,9 +31,11 @@ export class UserProcessor extends WorkerHost {
           userId: userId !== 'SYSTEM' ? userId : undefined,
         });
 
-        this.logger.log(
-          `Audit log saved: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
-        );
+        if (success) {
+          this.logger.log(
+            `Audit log saved: User ${userId} performed ${action}. Details: ${JSON.stringify(details)}`,
+          );
+        }
         break;
       }
       default:

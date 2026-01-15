@@ -111,10 +111,29 @@ describe('CallLogsController', () => {
         userEmail: 'test@example.com',
       };
 
-      const result = await controller.create(createDto);
+      const mockReq = { user: { id: 'user-id-1' } };
+      const result = await controller.create(createDto, mockReq as any);
 
       expect(result).toEqual(mockCallLog);
-      expect(service.create).toHaveBeenCalledWith(createDto);
+      expect(service.create).toHaveBeenCalledWith(createDto, 'user-id-1');
+    });
+
+    it('should use req.user.sub as userId if req.user.id is missing', async () => {
+      mockCallLogsService.create.mockResolvedValue(mockCallLog);
+      const createDto = { name: 'Test', phoneNumber: '+91 999 999', callType: CallType.INCOMING, userEmail: 'test@example.com' };
+      const mockReq = { user: { sub: 'sub-id-1' } };
+      
+      await controller.create(createDto, mockReq as any);
+      expect(service.create).toHaveBeenCalledWith(createDto, 'sub-id-1');
+    });
+
+    it('should use SYSTEM as userId if req.user is missing', async () => {
+      mockCallLogsService.create.mockResolvedValue(mockCallLog);
+      const createDto = { name: 'Test', phoneNumber: '+91 999 999', callType: CallType.INCOMING, userEmail: 'test@example.com' };
+      const mockReq = {};
+      
+      await controller.create(createDto, mockReq as any);
+      expect(service.create).toHaveBeenCalledWith(createDto, 'SYSTEM');
     });
   });
 
@@ -123,10 +142,11 @@ describe('CallLogsController', () => {
       const updatedCallLog = { ...mockCallLog, name: 'Updated Name' };
       mockCallLogsService.update.mockResolvedValue(updatedCallLog);
 
-      const result = await controller.update('test-id-1', { name: 'Updated Name' });
+      const mockReq = { user: { id: 'user-id-1' } };
+      const result = await controller.update('test-id-1', { name: 'Updated Name' }, mockReq as any);
 
       expect(result.name).toBe('Updated Name');
-      expect(service.update).toHaveBeenCalledWith('test-id-1', { name: 'Updated Name' });
+      expect(service.update).toHaveBeenCalledWith('test-id-1', { name: 'Updated Name' }, 'user-id-1');
     });
   });
 
@@ -134,10 +154,11 @@ describe('CallLogsController', () => {
     it('should delete a call log', async () => {
       mockCallLogsService.delete.mockResolvedValue(mockCallLog);
 
-      const result = await controller.delete('test-id-1');
+      const mockReq = { user: { id: 'user-id-1' } };
+      const result = await controller.delete('test-id-1', mockReq as any);
 
       expect(result).toEqual(mockCallLog);
-      expect(service.delete).toHaveBeenCalledWith('test-id-1');
+      expect(service.delete).toHaveBeenCalledWith('test-id-1', 'user-id-1');
     });
   });
 
@@ -145,10 +166,11 @@ describe('CallLogsController', () => {
     it('should bulk delete call logs', async () => {
       mockCallLogsService.bulkDelete.mockResolvedValue({ deleted: 3 });
 
-      const result = await controller.bulkDelete({ ids: ['id1', 'id2', 'id3'] });
+      const mockReq = { user: { id: 'user-id-1' } };
+      const result = await controller.bulkDelete({ ids: ['id1', 'id2', 'id3'] }, mockReq as any);
 
       expect(result.deleted).toBe(3);
-      expect(service.bulkDelete).toHaveBeenCalledWith(['id1', 'id2', 'id3']);
+      expect(service.bulkDelete).toHaveBeenCalledWith(['id1', 'id2', 'id3'], 'user-id-1');
     });
   });
 
