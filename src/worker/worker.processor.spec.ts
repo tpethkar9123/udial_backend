@@ -26,6 +26,10 @@ describe('UserProcessor', () => {
     jest.clearAllMocks();
   });
 
+  afterAll(async () => {
+    // Note: module is local to beforeEach, might need to lift it
+  });
+
   it('should be defined', () => {
     expect(processor).toBeDefined();
   });

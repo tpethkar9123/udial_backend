@@ -21,6 +21,12 @@ describe('S3Module', () => {
     }).compile();
   });
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+  });
+
   afterEach(() => {
     delete process.env.AWS_REGION;
     delete process.env.AWS_ACCESS_KEY_ID;
