@@ -3,6 +3,8 @@ import { CallLogsService } from './call-logs.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 import { CallType, SimProvider } from '@prisma/client';
+import { LogsService } from '../logs/logs.service';
+import { UpdateCallLogDto } from './call-logs.dto';
 
 describe('CallLogsService', () => {
   let service: CallLogsService;
@@ -21,6 +23,10 @@ describe('CallLogsService', () => {
     updatedAt: new Date(),
   };
 
+  const mockLogsService = {
+    logAction: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockPrismaService = {
     callLog: {
       create: jest.fn(),
@@ -35,7 +41,11 @@ describe('CallLogsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CallLogsService, { provide: PrismaService, useValue: mockPrismaService }],
+      providers: [
+        CallLogsService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: LogsService, useValue: mockLogsService },
+      ],
     }).compile();
 
     service = module.get<CallLogsService>(CallLogsService);
@@ -52,17 +62,25 @@ describe('CallLogsService', () => {
     it('should create a call log successfully', async () => {
       mockPrismaService.callLog.create.mockResolvedValue(mockCallLog);
 
-      const result = await service.create({
-        name: 'Test User',
-        phoneNumber: '+91 99999 99999',
-        callType: CallType.INCOMING,
-        duration: 120,
-        simProvider: SimProvider.VI,
-        userEmail: 'test@example.com',
-      });
+      const result = await service.create(
+        {
+          name: 'Test User',
+          phoneNumber: '+91 99999 99999',
+          callType: CallType.INCOMING,
+          duration: 120,
+          simProvider: SimProvider.VI,
+          userEmail: 'test@example.com',
+        },
+        'test-user-id',
+      );
 
       expect(result).toEqual(mockCallLog);
       expect(mockPrismaService.callLog.create).toHaveBeenCalledTimes(1);
+      expect(mockLogsService.logAction).toHaveBeenCalledWith(
+        'CALL_LOG_CREATED',
+        'test-user-id',
+        expect.any(Object),
+      );
     });
 
     it('should create call log with default values', async () => {
@@ -79,8 +97,26 @@ describe('CallLogsService', () => {
         data: expect.objectContaining({
           duration: 0,
           simProvider: SimProvider.OTHER,
+          callTime: expect.any(Date),
         }),
       });
+    });
+
+    it('should log error if logsService.logAction fails', async () => {
+      mockPrismaService.callLog.create.mockResolvedValue(mockCallLog);
+      mockLogsService.logAction.mockRejectedValueOnce(new Error('Log failed'));
+      const loggerSpy = jest.spyOn((service as any).logger, 'error');
+
+      await service.create({
+        name: 'Test',
+        phoneNumber: '123',
+        callType: CallType.INCOMING,
+        userEmail: 'test@example.com',
+      });
+
+      // Wait for promise microtask since we don't await logAction
+      await new Promise(process.nextTick);
+      expect(loggerSpy).toHaveBeenCalledWith('Failed to log CALL_LOG_CREATED', expect.any(Error));
     });
   });
 
@@ -174,10 +210,47 @@ describe('CallLogsService', () => {
         name: 'Updated Name',
       });
 
-      const result = await service.update('test-id-1', { name: 'Updated Name' });
+      const result = await service.update('test-id-1', { name: 'Updated Name' }, 'test-user-id');
 
       expect(result.name).toBe('Updated Name');
       expect(mockPrismaService.callLog.update).toHaveBeenCalledTimes(1);
+      expect(mockLogsService.logAction).toHaveBeenCalledWith(
+        'CALL_LOG_UPDATED',
+        'test-user-id',
+        expect.any(Object),
+      );
+    });
+
+    it('should handle all updateable fields', async () => {
+      mockPrismaService.callLog.findUnique.mockResolvedValue(mockCallLog);
+      mockPrismaService.callLog.update.mockResolvedValue(mockCallLog);
+      
+      const updateDto: UpdateCallLogDto = {
+        name: 'New Name',
+        phoneNumber: '999',
+        callType: CallType.OUTGOING,
+        duration: 50,
+        simProvider: SimProvider.AIRTEL,
+        userEmail: 'new@example.com',
+        callTime: new Date().toISOString(),
+        notes: 'New notes',
+      };
+
+      await service.update('test-id-1', updateDto);
+
+      expect(mockPrismaService.callLog.update).toHaveBeenCalledWith({
+        where: { id: 'test-id-1' },
+        data: {
+          name: updateDto.name,
+          phoneNumber: updateDto.phoneNumber,
+          callType: updateDto.callType,
+          duration: updateDto.duration,
+          simProvider: updateDto.simProvider,
+          userEmail: updateDto.userEmail,
+          callTime: expect.any(Date),
+          notes: updateDto.notes,
+        },
+      });
     });
 
     it('should throw NotFoundException if updating non-existent call log', async () => {
@@ -194,12 +267,17 @@ describe('CallLogsService', () => {
       mockPrismaService.callLog.findUnique.mockResolvedValue(mockCallLog);
       mockPrismaService.callLog.delete.mockResolvedValue(mockCallLog);
 
-      const result = await service.delete('test-id-1');
+      const result = await service.delete('test-id-1', 'test-user-id');
 
       expect(result).toEqual(mockCallLog);
       expect(mockPrismaService.callLog.delete).toHaveBeenCalledWith({
         where: { id: 'test-id-1' },
       });
+      expect(mockLogsService.logAction).toHaveBeenCalledWith(
+        'CALL_LOG_DELETED',
+        'test-user-id',
+        expect.any(Object),
+      );
     });
 
     it('should throw NotFoundException if deleting non-existent call log', async () => {
@@ -213,12 +291,17 @@ describe('CallLogsService', () => {
     it('should delete multiple call logs', async () => {
       mockPrismaService.callLog.deleteMany.mockResolvedValue({ count: 3 });
 
-      const result = await service.bulkDelete(['id1', 'id2', 'id3']);
+      const result = await service.bulkDelete(['id1', 'id2', 'id3'], 'test-user-id');
 
       expect(result.deleted).toBe(3);
       expect(mockPrismaService.callLog.deleteMany).toHaveBeenCalledWith({
         where: { id: { in: ['id1', 'id2', 'id3'] } },
       });
+      expect(mockLogsService.logAction).toHaveBeenCalledWith(
+        'CALL_LOG_BULK_DELETED',
+        'test-user-id',
+        expect.any(Object),
+      );
     });
   });
 
