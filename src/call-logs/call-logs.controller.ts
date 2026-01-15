@@ -13,7 +13,6 @@ import {
   Logger,
   Req,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { CallLogsService } from './call-logs.service';
 import { CreateCallLogDto, UpdateCallLogDto, CallLogQueryDto } from './call-logs.dto';
 import { AuthGuard } from '../auth/auth.guard';
