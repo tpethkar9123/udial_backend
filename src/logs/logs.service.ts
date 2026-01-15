@@ -7,7 +7,7 @@ export class LogsService {
   constructor(@InjectQueue('logs-queue') private logsQueue: Queue) {}
 
   async logAction(action: string, userId: string, details: any) {
-    await this.logsQueue.add('log-action', {
+    return this.logsQueue.add('log-action', {
       action,
       userId,
       details,
