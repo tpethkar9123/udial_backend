@@ -5,13 +5,13 @@ import { PrismaService } from './../src/prisma/prisma.service';
 
 /**
  * Prisma Integration Tests - Lead CRUD Operations
- * 
+ *
  * These tests use a REAL PostgreSQL database connection to verify:
  * - Database connectivity
  * - Lead CRUD operations
  * - Enum value handling
  * - Prisma query operations
- * 
+ *
  * Prerequisites:
  * - DATABASE_URL set in .env
  * - Database must be running and accessible
@@ -128,7 +128,7 @@ describe('Lead CRUD Operations (e2e)', () => {
   describe('Enum Values', () => {
     it('should accept all Priority enum values', async () => {
       const priorities = ['HIGH', 'MEDIUM', 'LOW'] as const;
-      
+
       for (const priority of priorities) {
         const lead = await prisma.lead.create({
           data: {
@@ -141,8 +141,14 @@ describe('Lead CRUD Operations (e2e)', () => {
     });
 
     it('should accept all LeadStage enum values', async () => {
-      const stages = ['CALL_DONE', 'FOLLOWUP_DONE', 'DEMO_BOOKED', 'NEGOTIATION', 'FUTURE_CONNECT'] as const;
-      
+      const stages = [
+        'CALL_DONE',
+        'FOLLOWUP_DONE',
+        'DEMO_BOOKED',
+        'NEGOTIATION',
+        'FUTURE_CONNECT',
+      ] as const;
+
       for (const stage of stages) {
         const lead = await prisma.lead.create({
           data: {
@@ -155,8 +161,15 @@ describe('Lead CRUD Operations (e2e)', () => {
     });
 
     it('should accept all LeadStatus enum values', async () => {
-      const statuses = ['NEW', 'CONNECTED', 'DEMO_DONE', 'CLOSED_WON', 'LOST', 'FOLLOW_UP'] as const;
-      
+      const statuses = [
+        'NEW',
+        'CONNECTED',
+        'DEMO_DONE',
+        'CLOSED_WON',
+        'LOST',
+        'FOLLOW_UP',
+      ] as const;
+
       for (const status of statuses) {
         const lead = await prisma.lead.create({
           data: {
@@ -170,7 +183,7 @@ describe('Lead CRUD Operations (e2e)', () => {
 
     it('should accept all LeadSource enum values', async () => {
       const sources = ['WEBSITE', 'REFERRAL', 'EMAIL_CAMPAIGN', 'SOCIAL_MEDIA'] as const;
-      
+
       for (const source of sources) {
         const lead = await prisma.lead.create({
           data: {
@@ -218,7 +231,7 @@ describe('Lead CRUD Operations (e2e)', () => {
         },
       });
       expect(leads.length).toBe(2);
-      expect(leads.every(l => l.city === 'Mumbai')).toBe(true);
+      expect(leads.every((l) => l.city === 'Mumbai')).toBe(true);
     });
 
     it('should filter by priority', async () => {
@@ -229,7 +242,7 @@ describe('Lead CRUD Operations (e2e)', () => {
         },
       });
       expect(leads.length).toBe(2);
-      expect(leads.every(l => l.priority === 'HIGH')).toBe(true);
+      expect(leads.every((l) => l.priority === 'HIGH')).toBe(true);
     });
 
     it('should count leads by criteria', async () => {
@@ -247,10 +260,10 @@ describe('Lead CRUD Operations (e2e)', () => {
         orderBy: { createdAt: 'desc' },
         take: 5,
       });
-      
+
       for (let i = 0; i < leads.length - 1; i++) {
         expect(new Date(leads[i].createdAt).getTime()).toBeGreaterThanOrEqual(
-          new Date(leads[i + 1].createdAt).getTime()
+          new Date(leads[i + 1].createdAt).getTime(),
         );
       }
     });
