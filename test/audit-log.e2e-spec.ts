@@ -7,11 +7,11 @@ import { RedisService } from './../src/redis/redis.service';
 
 /**
  * Audit Log Integration Tests
- * 
+ *
  * These tests use REAL connections to:
  * - PostgreSQL database (via Prisma)
  * - Redis (for connectivity verification)
- * 
+ *
  * Prerequisites:
  * - DATABASE_URL set in .env
  * - REDIS_URL set in .env
@@ -166,14 +166,14 @@ describe('AuditLog Integration (e2e)', () => {
       const logs = await auditLogService.findAll({
         action: `${testPrefix}-MINIMAL`,
       });
-      expect(logs.every(l => l.action === `${testPrefix}-MINIMAL`)).toBe(true);
+      expect(logs.every((l) => l.action === `${testPrefix}-MINIMAL`)).toBe(true);
     });
 
     it('should order by createdAt descending', async () => {
       const logs = await auditLogService.findAll({ action: `${testPrefix}-READ` });
       for (let i = 0; i < logs.length - 1; i++) {
         expect(new Date(logs[i].createdAt).getTime()).toBeGreaterThanOrEqual(
-          new Date(logs[i + 1].createdAt).getTime()
+          new Date(logs[i + 1].createdAt).getTime(),
         );
       }
     });
@@ -203,7 +203,7 @@ describe('AuditLog Integration (e2e)', () => {
   describe('Prisma Direct Operations', () => {
     it('should perform complex queries on audit logs', async () => {
       const action = `${testPrefix}-COMPLEX`;
-      
+
       // Create audit logs with different status codes
       await auditLogService.createLog({ action, statusCode: 200 });
       await auditLogService.createLog({ action, statusCode: 404 });
@@ -217,7 +217,7 @@ describe('AuditLog Integration (e2e)', () => {
       });
 
       expect(errorLogs.length).toBe(2);
-      expect(errorLogs.every(l => l.statusCode !== null && l.statusCode >= 400)).toBe(true);
+      expect(errorLogs.every((l) => l.statusCode !== null && l.statusCode >= 400)).toBe(true);
     });
 
     it('should group audit logs by action', async () => {

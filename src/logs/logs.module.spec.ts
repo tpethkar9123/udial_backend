@@ -27,6 +27,12 @@ describe('LogsModule', () => {
       .compile();
   });
 
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+  });
+
   it('should be defined', () => {
     expect(module).toBeDefined();
   });

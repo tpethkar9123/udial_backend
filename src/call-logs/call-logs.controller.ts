@@ -11,7 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { CallLogsService } from './call-logs.service';
 import { CreateCallLogDto, UpdateCallLogDto, CallLogQueryDto } from './call-logs.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -49,9 +51,10 @@ export class CallLogsController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() data: CreateCallLogDto) {
+  async create(@Body() data: CreateCallLogDto, @Req() req: any) {
     this.logger.log(`POST /call-logs - Creating call log`);
-    return this.callLogsService.create(data);
+    const userId = req.user?.id || req.user?.sub || 'SYSTEM';
+    return this.callLogsService.create(data, userId);
   }
 
   /**
@@ -59,9 +62,10 @@ export class CallLogsController {
    * Update an existing call log
    */
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: UpdateCallLogDto) {
+  async update(@Param('id') id: string, @Body() data: UpdateCallLogDto, @Req() req: any) {
     this.logger.log(`PUT /call-logs/${id} - Updating call log`);
-    return this.callLogsService.update(id, data);
+    const userId = req.user?.id || req.user?.sub || 'SYSTEM';
+    return this.callLogsService.update(id, data, userId);
   }
 
   /**
@@ -70,9 +74,10 @@ export class CallLogsController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id') id: string, @Req() req: any) {
     this.logger.log(`DELETE /call-logs/${id}`);
-    return this.callLogsService.delete(id);
+    const userId = req.user?.id || req.user?.sub || 'SYSTEM';
+    return this.callLogsService.delete(id, userId);
   }
 
   /**
@@ -81,9 +86,10 @@ export class CallLogsController {
    */
   @Post('bulk-delete')
   @HttpCode(HttpStatus.OK)
-  async bulkDelete(@Body() body: { ids: string[] }) {
+  async bulkDelete(@Body() body: { ids: string[] }, @Req() req: any) {
     this.logger.log(`POST /call-logs/bulk-delete - ${body.ids.length} items`);
-    return this.callLogsService.bulkDelete(body.ids);
+    const userId = req.user?.id || req.user?.sub || 'SYSTEM';
+    return this.callLogsService.bulkDelete(body.ids, userId);
   }
 
   /**
