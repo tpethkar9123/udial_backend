@@ -67,9 +67,13 @@ describe('AuditLogService', () => {
 
     it('should handle errors gracefully without throwing', async () => {
       mockPrismaService.auditLog.create.mockRejectedValue(new Error('Database error'));
+      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
 
       // Should not throw
       await expect(service.createLog({ action: 'TEST_ACTION' })).resolves.not.toThrow();
+      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to create audit log: Database error'));
+      
+      loggerSpy.mockRestore();
     });
 
     it('should create a log with details and userId', async () => {
