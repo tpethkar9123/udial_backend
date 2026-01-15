@@ -81,3 +81,39 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
 }
+
+// Call Log table for tracking all calls in uDial system
+model CallLog {
+  id          String      @id @default(uuid())
+  name        String      // Caller/Callee name
+  phoneNumber String      // Phone number in format +91 XXXXX XXXXX
+  callType    CallType    // INCOMING, OUTGOING, MISSED, UNANSWERED
+  duration    Int         @default(0) // Duration in seconds
+  simProvider SimProvider @default(OTHER) // SIM provider (Vi, Jio, Airtel, BSNL, etc.)
+  userEmail   String      // Email of the user who made/received the call
+  callTime    DateTime    @default(now()) // When the call occurred
+  notes       String?     // Optional notes about the call
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([callType])
+  @@index([userEmail])
+  @@index([callTime])
+  @@index([phoneNumber])
+}
+
+enum CallType {
+  INCOMING
+  OUTGOING
+  MISSED
+  UNANSWERED
+}
+
+enum SimProvider {
+  VI
+  JIO
+  AIRTEL
+  BSNL
+  OTHER
+}
+

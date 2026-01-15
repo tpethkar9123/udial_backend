@@ -9,6 +9,7 @@ import { S3Module } from './s3/s3.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WorkerModule } from './worker/worker.module';
 import { LogsModule } from './logs/logs.module';
+import { CallLogsModule } from './call-logs/call-logs.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
@@ -32,6 +33,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     PrismaModule,
     WorkerModule,
     LogsModule,
+    CallLogsModule,
   ],
 })
 export class AppModule {}
