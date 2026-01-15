@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 import { LeadsService } from './../src/leads/leads.service';
@@ -125,7 +124,13 @@ describe('Leads Integration (e2e)', () => {
     });
 
     it('should create leads with all LeadStage values', async () => {
-      const stages = ['CALL_DONE', 'FOLLOWUP_DONE', 'DEMO_BOOKED', 'NEGOTIATION', 'FUTURE_CONNECT'] as const;
+      const stages = [
+        'CALL_DONE',
+        'FOLLOWUP_DONE',
+        'DEMO_BOOKED',
+        'NEGOTIATION',
+        'FUTURE_CONNECT',
+      ] as const;
 
       for (const stage of stages) {
         const lead = await leadsService.create({
@@ -137,7 +142,14 @@ describe('Leads Integration (e2e)', () => {
     });
 
     it('should create leads with all LeadStatus values', async () => {
-      const statuses = ['NEW', 'CONNECTED', 'DEMO_DONE', 'CLOSED_WON', 'LOST', 'FOLLOW_UP'] as const;
+      const statuses = [
+        'NEW',
+        'CONNECTED',
+        'DEMO_DONE',
+        'CLOSED_WON',
+        'LOST',
+        'FOLLOW_UP',
+      ] as const;
 
       for (const status of statuses) {
         const lead = await leadsService.create({
@@ -188,7 +200,7 @@ describe('Leads Integration (e2e)', () => {
       }
 
       const allLeads = await leadsService.findAll();
-      const testLeads = allLeads.filter(l => l.leadName.includes(`${testPrefix}-bulk`));
+      const testLeads = allLeads.filter((l) => l.leadName.includes(`${testPrefix}-bulk`));
 
       expect(testLeads.length).toBeGreaterThanOrEqual(count);
     });
@@ -253,7 +265,7 @@ describe('Leads Integration (e2e)', () => {
       });
 
       expect(highPriorityLeads.length).toBeGreaterThanOrEqual(1);
-      expect(highPriorityLeads.every(l => l.priority === 'HIGH')).toBe(true);
+      expect(highPriorityLeads.every((l) => l.priority === 'HIGH')).toBe(true);
     });
 
     it('should count leads by city', async () => {
