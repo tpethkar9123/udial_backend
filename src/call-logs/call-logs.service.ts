@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CallType, SimProvider, Prisma } from '@prisma/client';
 import { CreateCallLogDto, UpdateCallLogDto, CallLogQueryDto } from './call-logs.dto';
+import { LogsService } from '../logs/logs.service';
 
 export interface CallLogStats {
   total: number;
@@ -26,12 +27,15 @@ export interface PaginatedCallLogs {
 export class CallLogsService {
   private readonly logger = new Logger(CallLogsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logsService: LogsService,
+  ) {}
 
   /**
    * Create a new call log
    */
-  async create(data: CreateCallLogDto) {
+  async create(data: CreateCallLogDto, userId: string = 'SYSTEM') {
     this.logger.log(`Creating call log for ${data.phoneNumber}`);
 
     const callLog = await this.prisma.callLog.create({
@@ -46,6 +50,17 @@ export class CallLogsService {
         notes: data.notes,
       },
     });
+
+    // Audit Log
+    this.logsService
+      .logAction('CALL_LOG_CREATED', userId, {
+        callLogId: callLog.id,
+        phoneNumber: data.phoneNumber,
+        name: data.name,
+        callType: data.callType,
+        userEmail: data.userEmail,
+      })
+      .catch((err) => this.logger.error('Failed to log CALL_LOG_CREATED', err));
 
     this.logger.log(`Call log created with ID: ${callLog.id}`);
     return callLog;
@@ -180,7 +195,7 @@ export class CallLogsService {
   /**
    * Update a call log
    */
-  async update(id: string, data: UpdateCallLogDto) {
+  async update(id: string, data: UpdateCallLogDto, userId: string = 'SYSTEM') {
     this.logger.log(`Updating call log with ID: ${id}`);
 
     // Check if exists
@@ -202,6 +217,14 @@ export class CallLogsService {
       data: updateData,
     });
 
+    // Audit Log
+    this.logsService
+      .logAction('CALL_LOG_UPDATED', userId, {
+        callLogId: id,
+        updatedFields: Object.keys(data),
+      })
+      .catch((err) => this.logger.error('Failed to log CALL_LOG_UPDATED', err));
+
     this.logger.log(`Call log ${id} updated successfully`);
     return updated;
   }
@@ -209,15 +232,24 @@ export class CallLogsService {
   /**
    * Delete a call log
    */
-  async delete(id: string) {
+  async delete(id: string, userId: string = 'SYSTEM') {
     this.logger.log(`Deleting call log with ID: ${id}`);
 
     // Check if exists
-    await this.findOne(id);
+    const callLog = await this.findOne(id);
 
     const deleted = await this.prisma.callLog.delete({
       where: { id },
     });
+
+    // Audit Log
+    this.logsService
+      .logAction('CALL_LOG_DELETED', userId, {
+        callLogId: id,
+        phoneNumber: callLog.phoneNumber,
+        name: callLog.name,
+      })
+      .catch((err) => this.logger.error('Failed to log CALL_LOG_DELETED', err));
 
     this.logger.log(`Call log ${id} deleted successfully`);
     return deleted;
@@ -226,12 +258,20 @@ export class CallLogsService {
   /**
    * Bulk delete call logs
    */
-  async bulkDelete(ids: string[]) {
+  async bulkDelete(ids: string[], userId: string = 'SYSTEM') {
     this.logger.log(`Bulk deleting ${ids.length} call logs`);
 
     const result = await this.prisma.callLog.deleteMany({
       where: { id: { in: ids } },
     });
+
+    // Audit Log
+    this.logsService
+      .logAction('CALL_LOG_BULK_DELETED', userId, {
+        count: result.count,
+        ids,
+      })
+      .catch((err) => this.logger.error('Failed to log CALL_LOG_BULK_DELETED', err));
 
     this.logger.log(`Deleted ${result.count} call logs`);
     return { deleted: result.count };
