@@ -23,17 +23,22 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - start;
 
           // Push fine-grained log to worker
-          this.logsService
-            .logAction('HTTP_REQUEST', 'SYSTEM', {
-              method,
-              url,
-              statusCode,
-              duration: `${duration}ms`,
-              ip,
-              userAgent,
-              // Don't log sensitive body data, but you could log specific fields here
-            })
-            .catch((err) => this.logger.error('Failed to queue log action', err));
+          // FILTER: Only log if it's NOT a GET request, OR if it's an error (handled in error block),
+          // OR if it's a specific critical path.
+          // ALSO skip health checks completely from persistent storage
+          if (method !== 'GET' && !url.includes('/health')) {
+            this.logsService
+              .logAction('HTTP_REQUEST', 'SYSTEM', {
+                method,
+                url,
+                statusCode,
+                duration: `${duration}ms`,
+                ip,
+                userAgent,
+                // Don't log sensitive body data, but you could log specific fields here
+              })
+              .catch((err) => this.logger.error('Failed to queue log action', err));
+          }
 
           this.logger.log(`${method} ${url} ${statusCode} ${duration}ms`);
         },

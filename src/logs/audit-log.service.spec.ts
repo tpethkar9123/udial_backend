@@ -71,8 +71,10 @@ describe('AuditLogService', () => {
 
       // Should not throw
       await expect(service.createLog({ action: 'TEST_ACTION' })).resolves.not.toThrow();
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to create audit log: Database error'));
-      
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to create audit log: Database error'),
+      );
+
       loggerSpy.mockRestore();
     });
 

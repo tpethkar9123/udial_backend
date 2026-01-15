@@ -52,7 +52,7 @@ describe('LoggingInterceptor', () => {
   });
 
   describe('intercept', () => {
-    it('should log successful HTTP requests', (done) => {
+    it('should NOT log successful GET requests (filtered out)', (done) => {
       const mockCallHandler: CallHandler = {
         handle: () => of({ data: 'test' }),
       };
@@ -62,13 +62,35 @@ describe('LoggingInterceptor', () => {
           expect(data).toEqual({ data: 'test' });
         },
         complete: () => {
-          // Give async logAction time to be called
+          setTimeout(() => {
+            expect(mockLogsService.logAction).not.toHaveBeenCalled();
+            done();
+          }, 10);
+        },
+      });
+    });
+
+    it('should log successful POST requests', (done) => {
+      const postRequest = { ...mockRequest, method: 'POST' };
+      const postContext = {
+        switchToHttp: () => ({
+          getRequest: () => postRequest,
+          getResponse: () => mockResponse,
+        }),
+      } as ExecutionContext;
+
+      const mockCallHandler: CallHandler = {
+        handle: () => of({ data: 'created' }),
+      };
+
+      interceptor.intercept(postContext, mockCallHandler).subscribe({
+        complete: () => {
           setTimeout(() => {
             expect(mockLogsService.logAction).toHaveBeenCalledWith(
               'HTTP_REQUEST',
               'SYSTEM',
               expect.objectContaining({
-                method: 'GET',
+                method: 'POST',
                 url: '/api/leads',
                 statusCode: 200,
               }),
@@ -79,7 +101,7 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should log HTTP errors', (done) => {
+    it('should log HTTP errors even for GET requests', (done) => {
       const testError = new Error('Test error');
       const mockCallHandler: CallHandler = {
         handle: () => throwError(() => testError),
@@ -87,14 +109,12 @@ describe('LoggingInterceptor', () => {
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
         error: () => {
-          // Give async logAction time to be called
           setTimeout(() => {
             expect(mockLogsService.logAction).toHaveBeenCalledWith(
               'HTTP_ERROR',
               'SYSTEM',
               expect.objectContaining({
                 method: 'GET',
-                url: '/api/leads',
                 error: 'Test error',
               }),
             );
@@ -104,9 +124,10 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should handle missing user-agent header', (done) => {
+    it('should handle missing user-agent header on POST', (done) => {
       const requestWithoutAgent = {
         ...mockRequest,
+        method: 'POST', // Use POST to ensure it is not filtered
         headers: {},
       };
 
