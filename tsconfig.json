@@ -10,6 +10,6 @@
     "emitDecoratorMetadata": true,
     "isolatedModules": true
   },
-  "include": ["src/**/*", "test/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]
 }

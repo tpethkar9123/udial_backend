@@ -90,10 +90,10 @@ describe('Leads Integration (e2e)', () => {
     });
 
     it('should find all leads', async () => {
-      const leads = await leadsService.findAll();
+      const result = await leadsService.findAll();
 
-      expect(Array.isArray(leads)).toBe(true);
-      expect(leads.length).toBeGreaterThanOrEqual(1);
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should delete a lead', async () => {
@@ -199,8 +199,8 @@ describe('Leads Integration (e2e)', () => {
         createdIds.push(lead.id);
       }
 
-      const allLeads = await leadsService.findAll();
-      const testLeads = allLeads.filter((l) => l.leadName.includes(`${testPrefix}-bulk`));
+      const result = await leadsService.findAll();
+      const testLeads = result.data.filter((l: any) => l.leadName.includes(`${testPrefix}-bulk`));
 
       expect(testLeads.length).toBeGreaterThanOrEqual(count);
     });
