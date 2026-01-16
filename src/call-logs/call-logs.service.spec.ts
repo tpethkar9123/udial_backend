@@ -224,7 +224,7 @@ describe('CallLogsService', () => {
     it('should handle all updateable fields', async () => {
       mockPrismaService.callLog.findUnique.mockResolvedValue(mockCallLog);
       mockPrismaService.callLog.update.mockResolvedValue(mockCallLog);
-      
+
       const updateDto: UpdateCallLogDto = {
         name: 'New Name',
         phoneNumber: '999',

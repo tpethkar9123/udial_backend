@@ -120,18 +120,28 @@ describe('CallLogsController', () => {
 
     it('should use req.user.sub as userId if req.user.id is missing', async () => {
       mockCallLogsService.create.mockResolvedValue(mockCallLog);
-      const createDto = { name: 'Test', phoneNumber: '+91 999 999', callType: CallType.INCOMING, userEmail: 'test@example.com' };
+      const createDto = {
+        name: 'Test',
+        phoneNumber: '+91 999 999',
+        callType: CallType.INCOMING,
+        userEmail: 'test@example.com',
+      };
       const mockReq = { user: { sub: 'sub-id-1' } };
-      
+
       await controller.create(createDto, mockReq as any);
       expect(service.create).toHaveBeenCalledWith(createDto, 'sub-id-1');
     });
 
     it('should use SYSTEM as userId if req.user is missing', async () => {
       mockCallLogsService.create.mockResolvedValue(mockCallLog);
-      const createDto = { name: 'Test', phoneNumber: '+91 999 999', callType: CallType.INCOMING, userEmail: 'test@example.com' };
+      const createDto = {
+        name: 'Test',
+        phoneNumber: '+91 999 999',
+        callType: CallType.INCOMING,
+        userEmail: 'test@example.com',
+      };
       const mockReq = {};
-      
+
       await controller.create(createDto, mockReq as any);
       expect(service.create).toHaveBeenCalledWith(createDto, 'SYSTEM');
     });
@@ -146,7 +156,11 @@ describe('CallLogsController', () => {
       const result = await controller.update('test-id-1', { name: 'Updated Name' }, mockReq as any);
 
       expect(result.name).toBe('Updated Name');
-      expect(service.update).toHaveBeenCalledWith('test-id-1', { name: 'Updated Name' }, 'user-id-1');
+      expect(service.update).toHaveBeenCalledWith(
+        'test-id-1',
+        { name: 'Updated Name' },
+        'user-id-1',
+      );
     });
   });
 

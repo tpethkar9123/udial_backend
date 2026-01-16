@@ -12,8 +12,8 @@ pipeline {
     }
 
     triggers {
-        // Poll GitHub every 5 hours for changes
-        pollSCM('H H/5 * * *')
+        // Trigger on GitHub push events
+        githubPush()
     }
 
     tools {
