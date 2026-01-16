@@ -71,14 +71,11 @@ pipeline {
                 }
             }
             steps {
-                // Copy Ansible files from Jenkins volume mount (not in git)
-                sh 'cp -r /var/lib/jenkins/ansible ./ansible'
-                
-                // Disable host key checking so the build doesn't hang or fail on verification
+                // Using the modular Ansible structure directly from the repository 'infra/ansible'
                 withEnv(["ANSIBLE_HOST_KEY_CHECKING=False"]) {
                     ansiblePlaybook(
-                        playbook: 'ansible/deploy.yml',
-                        inventory: 'ansible/inventory.ini',
+                        playbook: 'infra/ansible/site.yml',
+                        inventory: 'infra/ansible/inventory.ini',
                         credentialsId: "${EC2_SSH_CREDS}"
                     )
                 }
