@@ -15,7 +15,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:worker": "ts-node src/main-worker.ts",
     "build:worker": "nest build && cp dist/main-worker.js dist/main.js",
-    "seed": "npx ts-node prisma/seed.ts"
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",
