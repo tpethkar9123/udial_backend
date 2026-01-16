@@ -1,6 +1,27 @@
 import { PrismaClient, Priority, LeadStage, LeadStatus, LeadSource, CallType, SimProvider } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const prisma = new PrismaClient();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env from apps/api directory
+dotenv.config({ path: join(__dirname, '../.env') });
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Match PrismaService config
+  },
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // Helper function to map string values to enums
 function mapPriority(val: string): Priority {
