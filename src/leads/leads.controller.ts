@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { LeadsService, CreateLeadDto, UpdateLeadDto } from './leads.service';
 import { AuthGuard } from '../auth/auth.guard';
+import { LeadQueryDto } from './dto/lead-query.dto';
 
 @Controller('leads')
 @UseGuards(AuthGuard)
@@ -8,8 +9,8 @@ export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
   @Get()
-  findAll() {
-    return this.leadsService.findAll();
+  findAll(@Query() query: LeadQueryDto) {
+    return this.leadsService.findAll(query);
   }
 
   @Post()

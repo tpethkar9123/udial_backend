@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { LeadsService, CreateLeadDto, UpdateLeadDto } from './leads.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { LeadQueryDto } from './dto/lead-query.dto';
 
 describe('LeadsService', () => {
   let service: LeadsService;
@@ -29,6 +30,7 @@ describe('LeadsService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      count: jest.fn(),
     },
   };
 
@@ -55,24 +57,190 @@ describe('LeadsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of leads ordered by createdAt desc', async () => {
+    it('should return paginated leads with default parameters', async () => {
       const leads = [mockLead, { ...mockLead, id: 'test-uuid-456' }];
       mockPrismaService.lead.findMany.mockResolvedValue(leads);
+      mockPrismaService.lead.count.mockResolvedValue(2);
 
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
-      expect(result).toEqual(leads);
-      expect(prisma.lead.findMany).toHaveBeenCalledWith({
-        orderBy: { createdAt: 'desc' },
+      expect(result.data).toEqual(leads);
+      expect(result.meta.total).toBe(2);
+      expect(result.meta.page).toBe(1);
+      expect(result.meta.limit).toBe(10);
+      expect(result.stats).toBeDefined();
+    });
+
+    it('should apply pagination correctly', async () => {
+      const query: LeadQueryDto = { page: 2, limit: 5 };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(20);
+
+      const result = await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 5,
+          take: 5,
+        }),
+      );
+      expect(result.meta.totalPages).toBe(4);
+    });
+
+    it('should filter by priority', async () => {
+      const query: LeadQueryDto = { priority: 'HIGH' };
+      mockPrismaService.lead.findMany.mockResolvedValue([mockLead]);
+      mockPrismaService.lead.count.mockResolvedValue(1);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ priority: 'HIGH' }),
+        }),
+      );
+    });
+
+    it('should filter by stage', async () => {
+      const query: LeadQueryDto = { stage: 'DEMO_BOOKED' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ stage: 'DEMO_BOOKED' }),
+        }),
+      );
+    });
+
+    it('should filter by status', async () => {
+      const query: LeadQueryDto = { status: 'CLOSED_WON' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: 'CLOSED_WON' }),
+        }),
+      );
+    });
+
+    it('should filter by source', async () => {
+      const query: LeadQueryDto = { source: 'REFERRAL' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ source: 'REFERRAL' }),
+        }),
+      );
+    });
+
+    it('should filter by city with case-insensitive search', async () => {
+      const query: LeadQueryDto = { city: 'delhi' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            city: { contains: 'delhi', mode: 'insensitive' },
+          }),
+        }),
+      );
+    });
+
+    it('should apply search across multiple fields', async () => {
+      const query: LeadQueryDto = { search: 'test' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
+              { leadName: { contains: 'test', mode: 'insensitive' } },
+              { institution: { contains: 'test', mode: 'insensitive' } },
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should apply custom sorting', async () => {
+      const query: LeadQueryDto = { sortBy: 'leadName', sortOrder: 'asc' };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: { leadName: 'asc' },
+        }),
+      );
+    });
+
+    it('should return correct stats by priority', async () => {
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count
+        .mockResolvedValueOnce(10) // total
+        .mockResolvedValueOnce(10) // all (stats)
+        .mockResolvedValueOnce(3) // high
+        .mockResolvedValueOnce(5) // medium
+        .mockResolvedValueOnce(2); // low
+
+      const result = await service.findAll({});
+
+      expect(result.stats).toEqual({
+        all: 10,
+        high: 3,
+        medium: 5,
+        low: 2,
       });
     });
 
     it('should return empty array when no leads exist', async () => {
       mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
 
-      const result = await service.findAll();
+      const result = await service.findAll({});
 
-      expect(result).toEqual([]);
+      expect(result.data).toEqual([]);
+      expect(result.meta.total).toBe(0);
+    });
+
+    it('should combine multiple filters', async () => {
+      const query: LeadQueryDto = {
+        priority: 'HIGH',
+        stage: 'NEGOTIATION',
+        city: 'Mumbai',
+      };
+      mockPrismaService.lead.findMany.mockResolvedValue([]);
+      mockPrismaService.lead.count.mockResolvedValue(0);
+
+      await service.findAll(query);
+
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            priority: 'HIGH',
+            stage: 'NEGOTIATION',
+            city: { contains: 'Mumbai', mode: 'insensitive' },
+          }),
+        }),
+      );
     });
   });
 

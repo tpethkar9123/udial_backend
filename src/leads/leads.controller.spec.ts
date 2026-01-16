@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LeadsController } from './leads.controller';
 import { LeadsService, CreateLeadDto, UpdateLeadDto } from './leads.service';
 import { AuthGuard } from '../auth/auth.guard';
+import { LeadQueryDto } from './dto/lead-query.dto';
 
 describe('LeadsController', () => {
   let controller: LeadsController;
@@ -20,6 +21,12 @@ describe('LeadsController', () => {
     status: 'NEW',
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  const mockPaginatedResponse = {
+    data: [mockLead],
+    meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+    stats: { all: 1, high: 1, medium: 0, low: 0 },
   };
 
   const mockLeadsService = {
@@ -55,22 +62,55 @@ describe('LeadsController', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of leads', async () => {
-      const leads = [mockLead, { ...mockLead, id: 'test-uuid-456' }];
-      mockLeadsService.findAll.mockResolvedValue(leads);
+    it('should return paginated leads with default query', async () => {
+      mockLeadsService.findAll.mockResolvedValue(mockPaginatedResponse);
+      const query: LeadQueryDto = {};
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(query);
 
-      expect(result).toEqual(leads);
-      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual(mockPaginatedResponse);
+      expect(result.data).toBeDefined();
+      expect(result.meta).toBeDefined();
+      expect(result.stats).toBeDefined();
+      expect(service.findAll).toHaveBeenCalledWith(query);
     });
 
-    it('should return empty array when no leads exist', async () => {
-      mockLeadsService.findAll.mockResolvedValue([]);
+    it('should pass query parameters to service', async () => {
+      mockLeadsService.findAll.mockResolvedValue(mockPaginatedResponse);
+      const query: LeadQueryDto = { priority: 'HIGH', page: 2, limit: 5 };
 
-      const result = await controller.findAll();
+      await controller.findAll(query);
 
-      expect(result).toEqual([]);
+      expect(service.findAll).toHaveBeenCalledWith(query);
+    });
+
+    it('should return filtered results when filters applied', async () => {
+      const filteredResponse = {
+        ...mockPaginatedResponse,
+        data: [mockLead],
+        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+      };
+      mockLeadsService.findAll.mockResolvedValue(filteredResponse);
+      const query: LeadQueryDto = { city: 'Delhi', status: 'NEW' };
+
+      const result = await controller.findAll(query);
+
+      expect(result.data).toHaveLength(1);
+      expect(service.findAll).toHaveBeenCalledWith(query);
+    });
+
+    it('should return empty array when no leads match filters', async () => {
+      const emptyResponse = {
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+        stats: { all: 0, high: 0, medium: 0, low: 0 },
+      };
+      mockLeadsService.findAll.mockResolvedValue(emptyResponse);
+
+      const result = await controller.findAll({ city: 'NonExistent' });
+
+      expect(result.data).toEqual([]);
+      expect(result.meta.total).toBe(0);
     });
   });
 
