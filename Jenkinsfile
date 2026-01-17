@@ -9,6 +9,7 @@ pipeline {
         // Credentials IDs
         DOCKER_HUB_CREDS = 'docker-hub-credentials'
         EC2_SSH_CREDS    = 'ssh-deploy-key'
+        GITHUB_CREDS     = 'github-credentials' // ID of credentials in Jenkins for private repo access
     }
 
     triggers {
@@ -23,7 +24,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the API repository (default)
                 checkout scm
+                
+                // Checkout the Private Infra repository
+                dir('infra-repo') {
+                    git branch: 'main', 
+                        url: 'https://github.com/tpethkar9123/udial-infra.git',
+                        credentialsId: "${GITHUB_CREDS}"
+                }
             }
         }
 
@@ -74,8 +83,8 @@ pipeline {
                 // Using the modular Ansible structure directly from the repository 'infra/ansible'
                 withEnv(["ANSIBLE_HOST_KEY_CHECKING=False"]) {
                     ansiblePlaybook(
-                        playbook: 'infra/ansible/site.yml',
-                        inventory: 'infra/ansible/inventory.ini',
+                        playbook: 'infra-repo/infra/ansible/site.yml',
+                        inventory: 'infra-repo/infra/ansible/inventory.ini',
                         credentialsId: "${EC2_SSH_CREDS}"
                     )
                 }
