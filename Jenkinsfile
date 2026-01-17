@@ -9,6 +9,7 @@ pipeline {
         // Credentials IDs
         DOCKER_HUB_CREDS = 'docker-hub-credentials'
         EC2_SSH_CREDS    = 'ssh-deploy-key'
+        GITHUB_CREDS     = 'github-credentials' // ID of credentials in Jenkins for private repo access
     }
 
     triggers {
@@ -26,9 +27,11 @@ pipeline {
                 // Checkout the API repository (default)
                 checkout scm
                 
-                // Checkout the Infra repository to get playbooks and terraform configs
+                // Checkout the Private Infra repository
                 dir('infra-repo') {
-                    git branch: 'main', url: 'https://github.com/tpethkar9123/udial-infra.git'
+                    git branch: 'main', 
+                        url: 'https://github.com/tpethkar9123/udial-infra.git',
+                        credentialsId: "${GITHUB_CREDS}"
                 }
             }
         }
